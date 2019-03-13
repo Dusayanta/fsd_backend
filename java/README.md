@@ -1,1 +1,1 @@
-# This repository contains work done JAVA
+# This repository contains work done in JAVA training session.
