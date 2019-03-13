@@ -1,6 +1,7 @@
 package com.assignment.java;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class EmployeeService {
 
@@ -9,12 +10,13 @@ public class EmployeeService {
 	// Creating a HashMap for the employees
 	Map<Integer, Employee<Integer>> employees = new HashMap<>();
 	
-	interface ValidateEmployee{
-		boolean check(Employee<Integer> emp);
-	}
+//	interface ValidateEmployee{
+//		boolean check(Employee<Integer> emp);
+//	}
+// The above functional interface can be replaced by a Predicate, which itself is a functional interface 
 	
-	boolean validate(ValidateEmployee validator,Employee<Integer> emp) {
-		return validator.check(emp);
+	boolean validate(Employee<Integer> emp, Predicate<Employee<Integer>> validator) {
+		return validator.test(emp);
 	}
 
 	// Used to make divider and row lines
@@ -22,24 +24,26 @@ public class EmployeeService {
 	String row = new String(new char[84]).replace('\0', '-');
 
 	// Custom comparator for sorting employee by name
-	Comparator EMP_BY_NAME = new Comparator() {
-		public int compare(Object o1, Object o2) {
+	Comparator<Employee<Integer>> EMP_BY_NAME = new Comparator<Employee<Integer>>() {
+		public int compare(Employee<Integer> o1, Employee<Integer> o2) {
 
-			return ((Employee) o1).getName().compareTo(((Employee) o2).getName());
-		};
+			return o1.getName().compareTo(o2.getName());
+		}
+
+
 	};
 
 	// Custom comparator for sorting employee by age ascending
-	Comparator EMP_BY_AGE = new Comparator() {
-		public int compare(Object o1, Object o2) {
-			return ((Employee) o1).getAge() - ((Employee) o2).getAge();
+	Comparator<Employee<Integer>> EMP_BY_AGE = new Comparator<Employee<Integer>>() {
+		public int compare(Employee<Integer> o1, Employee<Integer> o2) {
+			return o1.getAge() - o2.getAge();
 		};
 	};
 
 	// Custom comparator for sorting employee by salary descending
-	Comparator EMP_BY_SALARY = new Comparator() {
-		public int compare(Object o1, Object o2) {
-			return ((Employee) o2).getSalary() - ((Employee) o1).getSalary();
+	Comparator<Employee<Integer>> EMP_BY_SALARY = new Comparator<Employee<Integer>>() {
+		public int compare(Employee<Integer> o1, Employee<Integer> o2) {
+			return o2.getSalary() - o1.getSalary();
 		};
 	};
 
@@ -82,7 +86,7 @@ public class EmployeeService {
 		System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-15s | %-10s | %n", "ID", "Name", "Age", "Gender",
 				"Department", "Salary");
 		System.out.printf("%s%n", line);
-		for (Employee emp : list) {
+		for (Employee<Integer> emp : list) {
 			System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-15s | %-10s | %n", emp.getEmpID(), emp.getName(),
 					emp.getAge(), emp.getGender(), emp.getDepartment(), emp.getSalary());
 			System.out.printf("%s%n", row);
@@ -122,7 +126,7 @@ public class EmployeeService {
 			System.out.println("Enter Name:");
 			String name = sc.nextLine();
 
-			System.out.println("Enter Age:");
+			System.out.println("Enter Age: (Age should be greater than 0 and less than 50)");
 			int age = acceptValidInteger();
 			if (age == -1)
 				return;
@@ -133,7 +137,7 @@ public class EmployeeService {
 			System.out.println("Enter Department:");
 			String dept = sc.nextLine();
 
-			System.out.println("Enter Salary:");
+			System.out.println("Enter Salary: (Salary should be greater than 10000)");
 			int salary = acceptValidInteger();
 			if (salary == -1)
 				return;
@@ -141,17 +145,28 @@ public class EmployeeService {
 			// creating new employee object
 			Employee<Integer> emp = new Employee<>(name, age, gender, dept, salary);
 			
-				boolean isValidData = validate(emp1 -> (emp1.getAge()>0 && emp1.getAge()<=50) && emp1.getSalary()>=10000 && (emp1.getDepartment().equals("IT") || emp1.getDepartment().equals("Admin")), emp);
+				boolean isValidData = validate(emp, emp1 -> {
+					
+					if((emp1.getAge()>0 && emp1.getAge()<=50) && emp1.getSalary()>=10000) {
+						System.out.println("Employee Saved successfully");
+						return true;
+					}
+					else {
+						System.out.println("Invalid employee details");
+						return false;
+					}
+							
+				});
 
 				if(isValidData) {
 					// adding entry to the HashMap
 					employees.put(emp.getEmpID(), emp);
 
-					System.out.println("\nEmployee added successfully..");
+					//System.out.println("\nEmployee added successfully..");
 				}
-				else {
-					System.out.println("Unable to add employee...Critera not met.");
-				}
+//				else {
+//					System.out.println("Unable to add employee...Critera not met.");
+//				}
 			
 
 		} catch (Exception e) {
@@ -273,7 +288,7 @@ public class EmployeeService {
 		Map<String, Integer> maxSalByDept = new HashMap<>();
 		Map<String, Integer> totalSalByDept = new HashMap<>();
 
-		for (Employee emp : values) {
+		for (Employee<Integer> emp : values) {
 			String dept = emp.getDepartment();
 			int currSal = emp.getSalary();
 			if (empCountByDept.containsKey(dept) && totalSalByDept.containsKey(dept)) {
@@ -291,7 +306,7 @@ public class EmployeeService {
 		}
 		System.out.println();
 
-		for (Employee emp : values) {
+		for (Employee<Integer> emp : values) {
 			String dept = emp.getDepartment();
 			int currSal = emp.getSalary();
 			if (maxSalByDept.containsKey(dept)) {

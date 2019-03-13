@@ -1,12 +1,9 @@
 package com.assignment.java;
 
-import java.util.*;
-
 public class EmployeeManager {
 
 	public static void main(String[] args) {
 
-		Scanner sc = new Scanner(System.in);
 		EmployeeService service = new EmployeeService();
 
 		try {

@@ -1,6 +1,6 @@
 package com.assignment.java;
 
-public class Employee<T extends Integer> {
+public class Employee<T extends Number> {
 	static int id;
 	private int empID;
 	private String name;
@@ -70,7 +70,22 @@ public class Employee<T extends Integer> {
 		this.salary = salary;
 	}
 
-
+//	@Override
+//	public int hashCode() {
+//		return this.getEmpID()%3;
+//	}
+//	
+//	@Override
+//	public boolean equals(Object obj) {
+//		if(obj instanceof Employee) {
+//			if(((Employee) obj).getEmpID() == this.getEmpID())
+//				return true;
+//			else
+//			return false;
+//		}
+//		else
+//			return false;
+//	}
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
@@ -78,4 +93,9 @@ public class Employee<T extends Integer> {
 				+ this.getDepartment() + "\t" + this.getSalary();
 	}
 
+//	@Override
+//	public int compareTo(Object obj) {
+//		
+//		return this.getAge()-((Employee)obj).getAge();
+//	}
 }
