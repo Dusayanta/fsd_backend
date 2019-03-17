@@ -1,14 +1,26 @@
 package com.assignment.java;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class EmployeeService {
 
 	Scanner sc = new Scanner(System.in);
 
 	// Creating a HashMap for the employees
-	Map<Integer, Employee<Integer>> employees = new HashMap<>();
+	//Map<Integer, Employee<Integer>> employees = new HashMap<>();
 	
 //	interface ValidateEmployee{
 //		boolean check(Employee<Integer> emp);
@@ -20,8 +32,8 @@ public class EmployeeService {
 	}
 
 	// Used to make divider and row lines
-	String line = new String(new char[84]).replace('\0', '#');
-	String row = new String(new char[84]).replace('\0', '-');
+	String line = new String(new char[89]).replace('\0', '#');
+	String row = new String(new char[89]).replace('\0', '-');
 
 	// Custom comparator for sorting employee by name
 	Comparator<Employee<Integer>> EMP_BY_NAME = new Comparator<Employee<Integer>>() {
@@ -79,15 +91,68 @@ public class EmployeeService {
 		return num;
 	}
 
+	@SuppressWarnings("unchecked")
+	public TreeMap<Integer, Employee<Integer>> readFromFile(){
+		
+		TreeMap<Integer, Employee<Integer>> treeMap = null;
+		
+		File file = new File("C:\\Users\\DusayantaPrasad\\Desktop\\training\\files\\employeeDB.dat");
+		if(file.length()>0)
+		{
+			try {
+				FileInputStream fin = new FileInputStream(file);
+				ObjectInputStream in = new ObjectInputStream(fin);
+				treeMap = (TreeMap<Integer, Employee<Integer>>)in.readObject();
+				
+				in.close();
+				fin.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}else {
+			treeMap = new TreeMap<Integer, Employee<Integer>>();
+		}
+		
+		return treeMap;
+	}
+	
+	public void writeToFile(TreeMap<Integer, Employee<Integer>> treeMap) {
+		
+		try {
+			File file = new File("C:\\Users\\DusayantaPrasad\\Desktop\\training\\files\\employeeDB.dat");
+			FileOutputStream fout = new FileOutputStream(file);
+			ObjectOutputStream out = new ObjectOutputStream(fout);
+			
+			out.writeObject(treeMap);
+			out.close();
+			fout.close();
+			System.out.println("Employee data saved....");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
 	// Method to print the list of employees
 	public void print(Collection<Employee<Integer>> list) {
 
 		System.out.printf("%s%n", line);
-		System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-15s | %-10s | %n", "ID", "Name", "Age", "Gender",
-				"Department", "Salary");
+		System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-20s | %-10s | %n", "ID", "Name", "Age", "Gender","Department", "Salary");
 		System.out.printf("%s%n", line);
 		for (Employee<Integer> emp : list) {
-			System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-15s | %-10s | %n", emp.getEmpID(), emp.getName(),
+			System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-20s | %-10s | %n", emp.getEmpID(), emp.getName(),
 					emp.getAge(), emp.getGender(), emp.getDepartment(), emp.getSalary());
 			System.out.printf("%s%n", row);
 		}
@@ -99,14 +164,17 @@ public class EmployeeService {
 		int empId = acceptValidInteger();
 		if (empId == -1)
 			return;
+		
+		TreeMap<Integer, Employee<Integer>> employees = readFromFile();
+		
 		if (employees.containsKey(empId)) {
 			Employee<Integer> emp = employees.get(empId);
 			System.out.printf("%s%n", line);
-			System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-15s | %-10s | %n", "ID", "Name", "Age", "Gender",
+			System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-20s | %-10s | %n", "ID", "Name", "Age", "Gender",
 					"Department", "Salary");
 			System.out.printf("%s%n", line);
 
-			System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-15s | %-10s | %n", emp.getEmpID(), emp.getName(),
+			System.out.printf("| %-5s | %-20s | %-5s | %-10s | %-20s | %-10s | %n", emp.getEmpID(), emp.getName(),
 					emp.getAge(), emp.getGender(), emp.getDepartment(), emp.getSalary());
 			System.out.printf("%s%n", row);
 		} else {
@@ -117,7 +185,15 @@ public class EmployeeService {
 
 	// Method to view all employee records
 	public void viewEmp() {
-		print(employees.values());
+		
+		TreeMap<Integer, Employee<Integer>> treeMap = readFromFile();
+		if(treeMap.isEmpty()) {
+			System.out.println("No Employee record present");
+		}
+		else
+		{
+			print(treeMap.values());
+		}
 	}
 
 	// Method to add an employee
@@ -126,10 +202,15 @@ public class EmployeeService {
 			System.out.println("Enter Name:");
 			String name = sc.nextLine();
 
-			System.out.println("Enter Age: (Age should be greater than 0 and less than 50)");
-			int age = acceptValidInteger();
-			if (age == -1)
-				return;
+			System.out.println("Enter DOB: (dd/MM/yyyy)");
+			String dob = sc.nextLine();
+			
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+			LocalDate birthday = LocalDate.parse(dob,formatter);
+			LocalDate today = LocalDate.now();
+			
+			Period p = Period.between(birthday, today);
+			int age = p.getYears();
 			
 			System.out.println("Enter Gender (Male/Female):");
 			String gender = sc.nextLine();
@@ -143,12 +224,12 @@ public class EmployeeService {
 				return;
 
 			// creating new employee object
-			Employee<Integer> emp = new Employee<>(name, age, gender, dept, salary);
+			Employee<Integer> emp = new Employee<>(1,name, age, gender, dept, salary);
 			
 				boolean isValidData = validate(emp, emp1 -> {
 					
 					if((emp1.getAge()>0 && emp1.getAge()<=50) && emp1.getSalary()>=10000) {
-						System.out.println("Employee Saved successfully");
+						//System.out.println("Employee Saved successfully");
 						return true;
 					}
 					else {
@@ -160,14 +241,19 @@ public class EmployeeService {
 
 				if(isValidData) {
 					// adding entry to the HashMap
-					employees.put(emp.getEmpID(), emp);
+					TreeMap<Integer, Employee<Integer>> treeMap = readFromFile();
+					if(!treeMap.isEmpty()) {
+						int id = treeMap.lastKey()+1;
+						emp.setEmpID(id);
+						treeMap.put(id, emp);
+					}else
+					{
+						treeMap.put(1, emp);
+					}
+					
+					writeToFile(treeMap);
 
-					//System.out.println("\nEmployee added successfully..");
 				}
-//				else {
-//					System.out.println("Unable to add employee...Critera not met.");
-//				}
-			
 
 		} catch (Exception e) {
 			System.out.println("\nSomething went wrong..!!");
@@ -183,8 +269,11 @@ public class EmployeeService {
 			if (empId == -1)
 				return;
 
+			TreeMap<Integer, Employee<Integer>> employees = readFromFile();
+			
 			if (employees.containsKey(empId)) {
 				employees.remove(empId);
+				writeToFile(employees);
 				System.out.println("\nEmployee deleted successfully");
 			} else {
 				System.out.println("\nNo employee present with ID:" + empId);
@@ -204,6 +293,8 @@ public class EmployeeService {
 			if (empId == -1)
 				return;
 
+			TreeMap<Integer, Employee<Integer>> employees = readFromFile();
+			
 			if (employees.containsKey(empId)) {
 
 				System.out.println("Enter Name:");
@@ -236,6 +327,7 @@ public class EmployeeService {
 
 				// replacing value on the same key to the HashMap
 				employees.put(empId, emp);
+				writeToFile(employees);
 
 				System.out.println("\nEmployee updated successfully..");
 
@@ -252,6 +344,7 @@ public class EmployeeService {
 	// Method to perform sorting on employee records
 	public void sortEmp() {
 
+		TreeMap<Integer, Employee<Integer>> employees = readFromFile();
 		ArrayList<Employee<Integer>> list = new ArrayList<>(employees.values());
 		System.out.println("Sort By:");
 		System.out.println("1. Name\t 2. Age\t 3. Salary\t 0. Return to main menu");
@@ -283,7 +376,59 @@ public class EmployeeService {
 	// Method to print statistics
 	public void printStatistics() {
 
+		TreeMap<Integer, Employee<Integer>> employees = readFromFile();
 		Collection<Employee<Integer>> values = employees.values();
+		
+		long count = values.stream().filter(emp -> emp.getAge() > 25).count();
+		System.out.println("No. of employees with age greater than 25: "+ count);
+		
+		List<Integer> empIds = values
+				.stream()
+				.filter(emp -> emp.getAge() > 25)
+				.map(emp -> emp.getEmpID())
+				.collect(Collectors.toList());
+		System.out.print("Employee ID of employees having age greater than 25: " );
+		empIds.forEach(item -> System.out.print(item+" "));
+		System.out.println();
+		
+		Map<String,Long> empByDept= values
+		.stream()
+		.collect(Collectors.groupingBy(Employee::getDepartment,Collectors.counting()));
+		
+		System.out.println("Employee count by department using stream ");
+		for(Map.Entry<String, Long> dept : empByDept.entrySet()) {
+			System.out.println(dept.getKey()+" "+dept.getValue());
+		}
+		
+		System.out.println("Employee count by department ordered using stream");
+		Map<String, Long> orderedEmpByDept = values
+		.stream()
+		.sorted(Comparator.comparing(Employee::getDepartment))
+		.collect(Collectors.groupingBy(Employee::getDepartment, TreeMap::new,Collectors.counting()));
+		
+		for(Map.Entry<String, Long> m : orderedEmpByDept.entrySet()) {
+			System.out.println(m.getKey()+" : "+m.getValue());
+		}
+		
+		Map<String,Double> avgByDept=values.stream().collect(Collectors.groupingBy(Employee::getDepartment, Collectors.averagingInt(Employee::getSalary)));
+		
+		System.out.println("Avg salary by department using stream");
+		for(Map.Entry<String, Double> avg : avgByDept.entrySet()) {
+			System.out.println(avg.getKey()+" "+avg.getValue());
+		}
+		
+		System.out.println("Departments having employee count greater than 2");
+		values
+		.stream()
+		.collect(Collectors.groupingBy(Employee::getDepartment,Collectors.counting()))
+		.entrySet()
+		.stream()
+		.filter(m -> m.getValue()>2)
+		.map(m -> m.getKey())
+		.collect(Collectors.toList())
+		.forEach(System.out::println);
+		
+		
 		Map<String, Integer> empCountByDept = new HashMap<>();
 		Map<String, Integer> maxSalByDept = new HashMap<>();
 		Map<String, Integer> totalSalByDept = new HashMap<>();
@@ -328,5 +473,69 @@ public class EmployeeService {
 		for (Map.Entry<String, Integer> m : empCountByDept.entrySet()) {
 			System.out.println(m.getKey() + " : " + totalSalByDept.get(m.getKey()) / m.getValue());
 		}
+	}
+	
+	public void export() {
+		
+		TreeMap<Integer, Employee<Integer>> employees = readFromFile();
+		
+		try {
+			File file = new File("C:\\Users\\DusayantaPrasad\\Desktop\\training\\files\\employee_export.txt");
+			PrintWriter pw = new PrintWriter(file);
+			
+			for(Employee<Integer> emp : employees.values()) {
+				
+				pw.printf("%d,%s,%d,%s,%s,%d%n", emp.getEmpID(),emp.getName(),emp.getAge(),emp.getGender(),emp.getDepartment(),emp.getSalary());
+			}
+			pw.close();
+			System.out.println("Export done successfully");
+			
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void bulkImport() {
+		
+		try {
+			
+			TreeMap<Integer, Employee<Integer>> employees = readFromFile();
+			int id = 0;
+			int empCount = 0;
+			
+			if(employees.isEmpty())
+				id = 1;
+			else
+				id = employees.lastKey()+1;
+			
+			File file = new File("C:\\Users\\DusayantaPrasad\\Desktop\\training\\files\\employee_import.txt");
+			
+			Scanner sc = new Scanner(file);
+			while(sc.hasNextLine()) {
+			
+				empCount++;
+				String word[] = sc.nextLine().split(",");
+				String name = word[0];
+				int age = Integer.parseInt(word[1]);
+				String gender = word[2];
+				String dept = word[3];
+				int salary = Integer.parseInt(word[4]);
+				
+				Employee<Integer> emp = new Employee<>(id,name,age,gender,dept,salary);
+				employees.put(id,emp);
+				System.out.println(emp);
+				id++;
+				
+			}
+			sc.close();
+			
+			writeToFile(employees);
+			System.out.println(empCount+" employee(s) imported successfully");
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
 	}
 }

@@ -19,6 +19,8 @@ public class EmployeeManager {
 				System.out.println("5.\tDelete Employee");
 				System.out.println("6.\tSort Employee");
 				System.out.println("7.\tPrint Statistics");
+				System.out.println("8.\tExport");
+				System.out.println("9.\tImport");
 				System.out.println("0.\tExit ");
 
 				System.out.println("Enter option: ");
@@ -51,6 +53,12 @@ public class EmployeeManager {
 					break;
 				case 7:
 					service.printStatistics();
+					break;
+				case 8:
+					service.export();
+					break;
+				case 9:
+					service.bulkImport();
 					break;
 				default:
 					System.err.println("Invalid Selection");

@@ -1,7 +1,12 @@
 package com.assignment.java;
 
-public class Employee<T extends Number> {
-	static int id;
+import java.io.Serializable;
+
+public class Employee<T extends Number> implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4113101039343579552L;
 	private int empID;
 	private String name;
 	private int age;
@@ -13,13 +18,13 @@ public class Employee<T extends Number> {
 
 	}
 
-	public Employee(String name, int age, String gender, String department, T salary) {
+	public Employee(int empID, String name, int age, String gender, String department, T salary) {
 		this.name = name;
 		this.age = age;
 		this.gender = gender;
 		this.department = department;
 		this.salary = salary;
-		this.empID = ++id;
+		this.empID = empID;
 	}
 
 	public int getEmpID() {
