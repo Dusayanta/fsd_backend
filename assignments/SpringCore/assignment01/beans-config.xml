@@ -3,15 +3,6 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
    http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!-- Bean instantiation with default constructor -->
-	<bean id="greetings" class="com.example.spring.core.Greetings" >
-		<property name="message" value="Hello World message from config file" />
-	</bean>	
-
-	<bean id="greetings1" class="com.example.spring.core.Greetings" >
-		<property name="message" value="Hello World message from config file - Greetings1" />
-	</bean>	
-	
 	<bean id="date" class="java.time.LocalDate" factory-method="parse">
 		<constructor-arg index="0" value="1996-07-23"/>
 	</bean>
